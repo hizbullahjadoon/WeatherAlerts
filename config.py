@@ -24,7 +24,7 @@ class Config:
 
     # API Configuration
     OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://172.18.1.152:11434")
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://172.18.1.140:11434")
     MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
     BASE_URL = os.getenv("BASE_URL", "https://api.open-meteo.com/v1/forecast")
     API_TIMEOUT = int(os.getenv("API_TIMEOUT", 30))
@@ -34,7 +34,9 @@ class Config:
     CACHE_TIME = int(os.getenv("CACHE_TIME", 43200))
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE = os.getenv("LOG_FILE", "app.log")
-
+    #OPENWEATHER_URL = "https://api.openweathermap.org/data/3.0/onecall"
+    OPENWEATHER_API_KEY = "1a2abeed79f43c3bd48c71f422bd5d73"
+    OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
     # CORS Configuration
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
 

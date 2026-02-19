@@ -15,8 +15,9 @@ from utils.validation import (
 from utils.health_check import get_health_status
 
 # Initialize Blueprint
-api_bp = Blueprint('api', __name__)
+api_bp = Blueprint("api", __name__)
 logger = logging.getLogger(__name__)
+
 
 @api_bp.route("/get_forecast/<province>/<district>/<int:days>")
 def get_forecast(province, district, days):
@@ -45,6 +46,7 @@ def get_forecast(province, district, days):
         return jsonify({"error": "Invalid forecast days"}), 400
 
     data = weather_service.get_weather_forecast(province, district, days)
+    print("Daily data for DataFrame creation:", data)
     if not data:
         return jsonify(
             {
@@ -55,7 +57,12 @@ def get_forecast(province, district, days):
         )
 
     # Convert to DataFrame format for display with caching
-    daily = data["daily"]
+    #daily = data["daily"]
+    if isinstance(data, dict) and data.get("_source") == "openweathermap":
+        daily = data["main"]
+    else:
+        daily = data.get("daily")
+    print(data)
     cache_key = f"forecast_{province}_{district}_{days}"
     df = create_weather_dataframe(daily, cache_key)
 
@@ -225,7 +232,11 @@ def generate_alerts():
             # Convert to DataFrames
             forecasts = {}
             for d, data in weather_data.items():
-                daily = data["daily"]
+                #daily = data["daily"]
+                if isinstance(data, dict) and data.get("_source") == "openweathermap":
+                    daily = data
+                else:
+                    daily = data.get("daily")
                 # Normalize data to ensure all values are lists for DataFrame creation
                 normalized_daily = {}
                 for key in [
@@ -241,7 +252,9 @@ def generate_alerts():
                     "uv_index_max",
                 ]:
                     value = daily.get(key)
-                    normalized_daily[key] = value if isinstance(value, list) else [value]
+                    normalized_daily[key] = (
+                        value if isinstance(value, list) else [value]
+                    )
 
                 cache_key = f"alerts_{province}_{forecast_days}_{d}"
                 df = create_weather_dataframe(normalized_daily, cache_key)
@@ -256,7 +269,7 @@ def generate_alerts():
 
             # Save district-level alerts
             alert_service.save_district_alerts(alerts, forecast_days, province)
-            
+
             return {
                 "status": "success",
                 "message": f"Alerts generated for {province}",
@@ -336,7 +349,11 @@ def generate_forecast_and_alerts():
         # Convert to DataFrames for alert generation
         forecasts = {}
         for d, data in weather_data.items():
-            daily = data["daily"]
+            #daily = data["daily"]
+            if isinstance(data, dict) and data.get("_source") == "openweathermap":
+                daily = data
+            else:
+                daily = data.get("daily")
             # Ensure all values are lists (handle scalar values from legacy cache)
             for key in daily:
                 if not isinstance(daily[key], list):
